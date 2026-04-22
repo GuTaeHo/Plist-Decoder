@@ -6,6 +6,17 @@ private let typeColumnWidth: CGFloat = 72
 private let typeColumnWidth: CGFloat = 90
 #endif
 
+struct PlistFontSizeKey: EnvironmentKey {
+    static let defaultValue: Double = 12
+}
+
+extension EnvironmentValues {
+    var plistFontSize: Double {
+        get { self[PlistFontSizeKey.self] }
+        set { self[PlistFontSizeKey.self] = newValue }
+    }
+}
+
 struct PlistTableView: View {
     let rows: [PlistRow]
     @State private var expandedPaths: Set<String> = ["Root"]
@@ -146,6 +157,9 @@ struct PlistTableView: View {
 struct DataInspectorView: View {
     let data: Data
     @State private var selectedTab = 0
+    #if os(macOS)
+    @Environment(\.plistFontSize) private var fontSize
+    #endif
 
     private var isBplist: Bool {
         data.count >= 8 && data.prefix(8) == Data("bplist00".utf8)
@@ -176,7 +190,7 @@ struct DataInspectorView: View {
     }
 
     private var base64String: String {
-        data.base64EncodedString()
+        data.base64EncodedString(options: .lineLength64Characters)
     }
 
     var body: some View {
@@ -199,26 +213,21 @@ struct DataInspectorView: View {
             .padding(.top, 8)
 
             Picker("", selection: $selectedTab) {
-                if isBplist { Text("Plist").tag(0) }
+                if nestedPlistRows != nil { Text("Plist").tag(0) }
                 Text("Hex").tag(1)
-                Text("UTF-8").tag(2)
-                Text("Base64").tag(3)
+                Text("Base64").tag(2)
             }
-#if os(iOS)
-            .pickerStyle(.menu)
-#else
             .pickerStyle(.segmented)
-#endif
             .padding(8)
             .onAppear {
-                if isBplist { selectedTab = 0 }
+                if nestedPlistRows != nil { selectedTab = 0 } else { selectedTab = 1 }
             }
 
             Divider()
 
             Group {
                 switch selectedTab {
-                case 0 where isBplist:
+                case 0:
                     if let rows = nestedPlistRows {
                         PlistTableView(rows: rows)
                     } else {
@@ -230,29 +239,22 @@ struct DataInspectorView: View {
                 case 1:
                     ScrollView([.horizontal, .vertical]) {
                         Text(hexDump)
+                            #if os(macOS)
+                            .font(.system(size: fontSize, design: .monospaced))
+                            #else
                             .font(.system(.caption, design: .monospaced))
+                            #endif
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(10)
                     }
-                case 2:
-                    ScrollView([.horizontal, .vertical]) {
-                        if let str = utf8String {
-                            Text(str)
-                                .font(.system(.caption, design: .monospaced))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(10)
-                        } else {
-                            Text("UTF-8로 디코딩할 수 없습니다")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .padding(10)
-                        }
-                    }
                 default:
-                    ScrollView([.horizontal, .vertical]) {
+                    ScrollView(.vertical) {
                         Text(base64String)
+                            #if os(macOS)
+                            .font(.system(size: fontSize, design: .monospaced))
+                            #else
                             .font(.system(.caption, design: .monospaced))
+                            #endif
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(10)
                     }
@@ -269,7 +271,6 @@ struct DataInspectorView: View {
                         let text: String
                         switch selectedTab {
                         case 1: text = hexDump
-                        case 2: text = utf8String ?? ""
                         default: text = base64String
                         }
 #if os(macOS)
@@ -301,6 +302,9 @@ struct PlistRowView: View {
 
     @State private var isCopied = false
     @State private var showDataInspector = false
+    #if os(macOS)
+    @Environment(\.plistFontSize) private var fontSize
+    #endif
 
     var body: some View {
         HStack(spacing: 0) {
@@ -312,7 +316,11 @@ struct PlistRowView: View {
                 if row.value.isContainer {
                     Button(action: onToggle) {
                         Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                            #if os(macOS)
+                            .font(.system(size: max(8, fontSize - 2)))
+                            #else
                             .font(.caption2)
+                            #endif
                             .frame(width: 12, height: 12)
                             .foregroundStyle(.secondary)
                     }
@@ -322,7 +330,11 @@ struct PlistRowView: View {
                 }
 
                 Text(row.key)
+                    #if os(macOS)
+                    .font(.system(size: fontSize, design: .monospaced))
+                    #else
                     .font(.system(.caption, design: .monospaced))
+                    #endif
                     .foregroundStyle(keyColor)
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -336,7 +348,11 @@ struct PlistRowView: View {
 
             // Type column
             Text(row.value.typeDescription)
+                #if os(macOS)
+                .font(.system(size: fontSize))
+                #else
                 .font(.caption)
+                #endif
                 .foregroundStyle(typeColor)
                 .frame(width: typeColumnWidth, alignment: .leading)
                 .padding(.horizontal, 8)
@@ -346,7 +362,11 @@ struct PlistRowView: View {
             // Value column
             HStack {
                 Text(row.value.valueDescription)
+                    #if os(macOS)
+                    .font(.system(size: fontSize, design: .monospaced))
+                    #else
                     .font(.system(.caption, design: .monospaced))
+                    #endif
                     .foregroundStyle(valueColor)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -378,6 +398,8 @@ struct PlistRowView: View {
                                         }
                                     }
                             }
+                            .background(Color(red: 0.11, green: 0.11, blue: 0.12))
+                            .environment(\.colorScheme, .dark)
                         }
                     }
 #endif

@@ -6,6 +6,10 @@ struct ContentView: View {
     @State private var errorMessage: String? = nil
     @State private var isFilePickerPresented = false
     @State private var isLoading = false
+    @AppStorage("plistDarkMode") private var isDarkMode: Bool = false
+    #if os(macOS)
+    @AppStorage("plistFontSize") private var fontSize: Double = 12
+    #endif
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,10 +25,17 @@ struct ContentView: View {
                 emptyState
             } else {
                 PlistTableView(rows: rows)
+                #if os(macOS)
+                    .environment(\.plistFontSize, fontSize)
+                #endif
             }
         }
-#if os(macOS)
+#if os(iOS)
+        .background(Color(red: 0.11, green: 0.11, blue: 0.12))
+        .environment(\.colorScheme, .dark)
+#else
         .frame(minWidth: 600, minHeight: 400)
+        .preferredColorScheme(isDarkMode ? .dark : .light)
 #endif
         .fileImporter(
             isPresented: $isFilePickerPresented,
@@ -57,7 +68,42 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
 
+                #if os(macOS)
+                Divider().frame(height: 16)
+                HStack(spacing: 0) {
+                    Button(action: { fontSize = max(8, fontSize - 1) }) {
+                        Image(systemName: "minus")
+                            .frame(width: 28, height: 28)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(fontSize <= 8)
+                    Image(systemName: "textformat.size")
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 4)
+                    Button(action: { fontSize = min(20, fontSize + 1) }) {
+                        Image(systemName: "plus")
+                            .frame(width: 28, height: 28)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(fontSize >= 20)
+                }
+                #endif
+
                 Spacer()
+
+                #if os(macOS)
+                Button(action: { isDarkMode.toggle() }) {
+                    Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help(isDarkMode ? "라이트 모드로 전환" : "다크 모드로 전환")
+
+                Divider().frame(height: 16)
+                #endif
 
                 Text("\(rows.count)개 항목")
                     .font(.caption)
@@ -76,22 +122,35 @@ struct ContentView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "doc.text.magnifyingglass")
-                .font(.system(size: 64))
-                .foregroundStyle(.secondary)
-            Text("Plist 파일을 열어주세요")
-                .font(.title2)
-                .foregroundStyle(.secondary)
-            Text("파일을 드래그 앤 드롭하거나 아래 버튼으로 선택하세요")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-            Button("파일 선택") {
-                isFilePickerPresented = true
+        ZStack(alignment: .topTrailing) {
+            VStack(spacing: 20) {
+                Image(systemName: "doc.text.magnifyingglass")
+                    .font(.system(size: 64))
+                    .foregroundStyle(.secondary)
+                Text("Plist 파일을 열어주세요")
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
+                Text("파일을 드래그 앤 드롭하거나 아래 버튼으로 선택하세요")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                Button("파일 선택") {
+                    isFilePickerPresented = true
+                }
+                .buttonStyle(.bordered)
             }
-            .buttonStyle(.bordered)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            #if os(macOS)
+            Button(action: { isDarkMode.toggle() }) {
+                Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help(isDarkMode ? "라이트 모드로 전환" : "다크 모드로 전환")
+            .padding(12)
+            #endif
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func errorView(_ message: String) -> some View {
