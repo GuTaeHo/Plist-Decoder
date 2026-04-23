@@ -30,13 +30,10 @@ struct ContentView: View {
                 #endif
             }
         }
-#if os(iOS)
-        .background(Color(red: 0.11, green: 0.11, blue: 0.12))
-        .environment(\.colorScheme, .dark)
-#else
+#if os(macOS)
         .frame(minWidth: 600, minHeight: 400)
-        .preferredColorScheme(isDarkMode ? .dark : .light)
 #endif
+        .preferredColorScheme(isDarkMode ? .dark : .light)
         .fileImporter(
             isPresented: $isFilePickerPresented,
             allowedContentTypes: [.propertyList],
@@ -93,7 +90,6 @@ struct ContentView: View {
 
                 Spacer()
 
-                #if os(macOS)
                 Button(action: { isDarkMode.toggle() }) {
                     Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
                         .frame(width: 28, height: 28)
@@ -102,6 +98,7 @@ struct ContentView: View {
                 .buttonStyle(.plain)
                 .help(isDarkMode ? "라이트 모드로 전환" : "다크 모드로 전환")
 
+                #if os(macOS)
                 Divider().frame(height: 16)
                 #endif
 
@@ -122,7 +119,24 @@ struct ContentView: View {
     }
 
     private var emptyState: some View {
-        ZStack(alignment: .topTrailing) {
+        VStack(spacing: 0) {
+            HStack {
+                Spacer()
+                Button(action: { isDarkMode.toggle() }) {
+                    Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
+                        .font(.title3)
+                        .foregroundStyle(.primary)
+                        .frame(width: 36, height: 36)
+                        .background(Color.secondary.opacity(0.15))
+                        .clipShape(Circle())
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .help(isDarkMode ? "라이트 모드로 전환" : "다크 모드로 전환")
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+
             VStack(spacing: 20) {
                 Image(systemName: "doc.text.magnifyingglass")
                     .font(.system(size: 64))
@@ -139,17 +153,6 @@ struct ContentView: View {
                 .buttonStyle(.bordered)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            #if os(macOS)
-            Button(action: { isDarkMode.toggle() }) {
-                Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
-                    .frame(width: 28, height: 28)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .help(isDarkMode ? "라이트 모드로 전환" : "다크 모드로 전환")
-            .padding(12)
-            #endif
         }
     }
 
