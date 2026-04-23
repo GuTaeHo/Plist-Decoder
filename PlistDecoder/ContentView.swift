@@ -7,9 +7,19 @@ struct ContentView: View {
     @State private var isFilePickerPresented = false
     @State private var isLoading = false
     @AppStorage("plistDarkMode") private var isDarkMode: Bool = false
-    #if os(macOS)
     @AppStorage("plistFontSize") private var fontSize: Double = 12
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+    @Environment(\.verticalSizeClass) private var vSizeClass
     #endif
+
+    private var showFontControls: Bool {
+        #if os(macOS)
+        return true
+        #else
+        return hSizeClass == .regular || vSizeClass == .compact
+        #endif
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -25,9 +35,7 @@ struct ContentView: View {
                 emptyState
             } else {
                 PlistTableView(rows: rows)
-                #if os(macOS)
                     .environment(\.plistFontSize, fontSize)
-                #endif
             }
         }
 #if os(macOS)
@@ -65,28 +73,28 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
 
-                #if os(macOS)
-                Divider().frame(height: 16)
-                HStack(spacing: 0) {
-                    Button(action: { fontSize = max(8, fontSize - 1) }) {
-                        Image(systemName: "minus")
-                            .frame(width: 28, height: 28)
-                            .contentShape(Rectangle())
+                if showFontControls {
+                    Divider().frame(height: 16)
+                    HStack(spacing: 0) {
+                        Button(action: { fontSize = max(8, fontSize - 1) }) {
+                            Image(systemName: "minus")
+                                .frame(width: 28, height: 28)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(fontSize <= 8)
+                        Image(systemName: "textformat.size")
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 4)
+                        Button(action: { fontSize = min(20, fontSize + 1) }) {
+                            Image(systemName: "plus")
+                                .frame(width: 28, height: 28)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(fontSize >= 20)
                     }
-                    .buttonStyle(.plain)
-                    .disabled(fontSize <= 8)
-                    Image(systemName: "textformat.size")
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 4)
-                    Button(action: { fontSize = min(20, fontSize + 1) }) {
-                        Image(systemName: "plus")
-                            .frame(width: 28, height: 28)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(fontSize >= 20)
                 }
-                #endif
 
                 Spacer()
 

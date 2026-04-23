@@ -157,9 +157,25 @@ struct PlistTableView: View {
 struct DataInspectorView: View {
     let data: Data
     @State private var selectedTab = 0
-    #if os(macOS)
     @Environment(\.plistFontSize) private var fontSize
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+    @Environment(\.verticalSizeClass) private var vSizeClass
     #endif
+
+    private var useCustomFont: Bool {
+        #if os(macOS)
+        return true
+        #else
+        return hSizeClass == .regular || vSizeClass == .compact
+        #endif
+    }
+
+    private var monoFont: Font {
+        useCustomFont
+            ? .system(size: fontSize, design: .monospaced)
+            : .system(.caption, design: .monospaced)
+    }
 
     private var isBplist: Bool {
         data.count >= 8 && data.prefix(8) == Data("bplist00".utf8)
@@ -239,22 +255,14 @@ struct DataInspectorView: View {
                 case 1:
                     ScrollView([.horizontal, .vertical]) {
                         Text(hexDump)
-                            #if os(macOS)
-                            .font(.system(size: fontSize, design: .monospaced))
-                            #else
-                            .font(.system(.caption, design: .monospaced))
-                            #endif
+                            .font(monoFont)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(10)
                     }
                 default:
                     ScrollView(.vertical) {
                         Text(base64String)
-                            #if os(macOS)
-                            .font(.system(size: fontSize, design: .monospaced))
-                            #else
-                            .font(.system(.caption, design: .monospaced))
-                            #endif
+                            .font(monoFont)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(10)
                     }
@@ -302,9 +310,34 @@ struct PlistRowView: View {
 
     @State private var isCopied = false
     @State private var showDataInspector = false
-    #if os(macOS)
     @Environment(\.plistFontSize) private var fontSize
+    @AppStorage("plistDarkMode") private var isDarkMode: Bool = false
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+    @Environment(\.verticalSizeClass) private var vSizeClass
     #endif
+
+    private var useCustomFont: Bool {
+        #if os(macOS)
+        return true
+        #else
+        return hSizeClass == .regular || vSizeClass == .compact
+        #endif
+    }
+
+    private var monoFont: Font {
+        useCustomFont
+            ? .system(size: fontSize, design: .monospaced)
+            : .system(.caption, design: .monospaced)
+    }
+
+    private var typeFont: Font {
+        useCustomFont ? .system(size: fontSize) : .caption
+    }
+
+    private var chevronFont: Font {
+        useCustomFont ? .system(size: max(8, fontSize - 2)) : .caption2
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -316,11 +349,7 @@ struct PlistRowView: View {
                 if row.value.isContainer {
                     Button(action: onToggle) {
                         Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                            #if os(macOS)
-                            .font(.system(size: max(8, fontSize - 2)))
-                            #else
-                            .font(.caption2)
-                            #endif
+                            .font(chevronFont)
                             .frame(width: 12, height: 12)
                             .foregroundStyle(.secondary)
                     }
@@ -330,11 +359,7 @@ struct PlistRowView: View {
                 }
 
                 Text(row.key)
-                    #if os(macOS)
-                    .font(.system(size: fontSize, design: .monospaced))
-                    #else
-                    .font(.system(.caption, design: .monospaced))
-                    #endif
+                    .font(monoFont)
                     .foregroundStyle(keyColor)
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -348,11 +373,7 @@ struct PlistRowView: View {
 
             // Type column
             Text(row.value.typeDescription)
-                #if os(macOS)
-                .font(.system(size: fontSize))
-                #else
-                .font(.caption)
-                #endif
+                .font(typeFont)
                 .foregroundStyle(typeColor)
                 .frame(width: typeColumnWidth, alignment: .leading)
                 .padding(.horizontal, 8)
@@ -362,11 +383,7 @@ struct PlistRowView: View {
             // Value column
             HStack {
                 Text(row.value.valueDescription)
-                    #if os(macOS)
-                    .font(.system(size: fontSize, design: .monospaced))
-                    #else
-                    .font(.system(.caption, design: .monospaced))
-                    #endif
+                    .font(monoFont)
                     .foregroundStyle(valueColor)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -398,8 +415,7 @@ struct PlistRowView: View {
                                         }
                                     }
                             }
-                            .background(Color(red: 0.11, green: 0.11, blue: 0.12))
-                            .environment(\.colorScheme, .dark)
+                            .preferredColorScheme(isDarkMode ? .dark : .light)
                         }
                     }
 #endif
