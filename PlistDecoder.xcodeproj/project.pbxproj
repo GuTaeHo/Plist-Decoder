@@ -23,6 +23,7 @@
 		AA100004 /* PlistTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlistTableView.swift; sourceTree = "<group>"; };
 		AA100005 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA100006 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		AA100007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +52,7 @@
 				AA100002 /* ContentView.swift */,
 				AA100003 /* PlistItem.swift */,
 				AA100004 /* PlistTableView.swift */,
+				AA100007 /* Info.plist */,
 				AA100005 /* Assets.xcassets */,
 				AA030003 /* Preview Content */,
 			);
@@ -280,6 +282,7 @@
 				DEVELOPMENT_TEAM = 3MDWMG7Z69;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PlistDecoder/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Plist Decoder";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
@@ -323,6 +326,7 @@
 				DEVELOPMENT_TEAM = 3MDWMG7Z69;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PlistDecoder/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Plist Decoder";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
