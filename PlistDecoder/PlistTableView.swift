@@ -6,6 +6,16 @@ private let typeColumnWidth: CGFloat = 72
 private let typeColumnWidth: CGFloat = 90
 #endif
 
+private extension Color {
+    static var plistInspectorBackground: Color {
+#if os(macOS)
+        Color(nsColor: .windowBackgroundColor)
+#else
+        Color(uiColor: .systemBackground)
+#endif
+    }
+}
+
 struct PlistFontSizeKey: EnvironmentKey {
     static let defaultValue: Double = 12
 }
@@ -259,6 +269,7 @@ struct DataInspectorView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(10)
                     }
+                    .background(Color.plistInspectorBackground)
                 default:
                     ScrollView(.vertical) {
                         Text(base64String)
@@ -266,9 +277,11 @@ struct DataInspectorView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(10)
                     }
+                    .background(Color.plistInspectorBackground)
                 }
             }
             .frame(maxHeight: .infinity)
+            .background(Color.plistInspectorBackground)
 
             Divider()
 
@@ -293,6 +306,7 @@ struct DataInspectorView: View {
             }
             .padding(8)
         }
+        .background(Color.plistInspectorBackground)
 #if os(macOS)
         .frame(minWidth: 500, minHeight: 500)
 #else
@@ -415,6 +429,8 @@ struct PlistRowView: View {
                                         }
                                     }
                             }
+                            .navigationViewStyle(.stack)
+                            .background(Color.plistInspectorBackground)
                             .preferredColorScheme(isDarkMode ? .dark : .light)
                         }
                     }

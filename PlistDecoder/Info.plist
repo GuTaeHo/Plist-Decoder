@@ -9,6 +9,8 @@
 			<string>Property List</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>com.apple.property-list</string>
@@ -21,6 +23,8 @@
 			<string>Xcode App Data Package</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
 			<key>LSTypeIsPackage</key>
 			<true/>
 			<key>LSItemContentTypes</key>
